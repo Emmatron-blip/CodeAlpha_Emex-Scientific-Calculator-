@@ -39,9 +39,17 @@ jobs:
       - name: Install Android SDK packages
         run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
 
-      - name: Build APK
+      - name: Diagnose Android project
         working-directory: android
-        run: gradle assembleDebug
+        run: |
+          echo "=== PROJECT FILES ==="
+          find . -maxdepth 4 -type f | sort
+          echo "=== SETTINGS.GRADLE ==="
+          cat settings.gradle
+          echo "=== APP BUILD.GRADLE ==="
+          cat app/build.gradle
+          echo "=== GRADLE PROJECTS ==="
+          gradle projects
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
