@@ -1,4 +1,4 @@
-name: Build Calculator Android APK
+name: Build Emex Calculator APK
 
 on:
   workflow_dispatch:
@@ -11,14 +11,13 @@ permissions:
 
 jobs:
   build:
-    name: Build Android APK
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Java 17
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -26,9 +25,13 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          accept-android-sdk-licenses: false
 
       - name: Accept Android SDK licenses
         run: yes | sdkmanager --licenses || true
@@ -36,7 +39,7 @@ jobs:
       - name: Install Android SDK packages
         run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
 
-      - name: Build Android APK
+      - name: Build APK
         working-directory: android
         run: gradle assembleDebug
 
