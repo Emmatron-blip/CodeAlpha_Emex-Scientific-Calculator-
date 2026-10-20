@@ -1,0 +1,63 @@
+name: Build Calculator Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Create Android project
+        run: |
+          mkdir -p www
+          cp index.html www/
+          cp style.css www/ 2>/dev/null || true
+          cp styles.css www/ 2>/dev/null || true
+          cp script.js www/ 2>/dev/null || true
+          cp javascript.js www/ 2>/dev/null || true
+          cp -r assets www/ 2>/dev/null || true
+          cp -r images www/ 2>/dev/null || true
+          npm init -y
+          npm install @capacitor/core @capacitor/android
+          npm install --save-dev @capacitor/cli
+          npx cap init "Emex Scientific Calculator" \
+            com.emex.scientificcalculator \
+            --web-dir www
+          npx cap add android
+          npx cap sync android
+
+      - name: Build APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Emex-Scientific-Calculator-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
