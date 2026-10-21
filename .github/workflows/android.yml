@@ -1,60 +1,32 @@
-name: Build Emex Calculator APK
-
+name: Build APK
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - main
-
-permissions:
-  contents: read
-
+    branches: [main, master]
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.9'
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v4
-        with:
-          accept-android-sdk-licenses: false
-
-      - name: Accept Android SDK licenses
-        run: yes | sdkmanager --licenses || true
-
-      - name: Install Android SDK packages
-        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
-
-      - name: Diagnose Android project
-        working-directory: android
+          java-version: 21
+      - name: Prepare web files
         run: |
-          echo "=== PROJECT FILES ==="
-          find . -maxdepth 4 -type f | sort
-          echo "=== SETTINGS.GRADLE ==="
-          cat settings.gradle
-          echo "=== APP BUILD.GRADLE ==="
-          cat app/build.gradle
-          echo "=== GRADLE PROJECTS ==="
-          gradle projects
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+          mkdir -p www
+          if [ -f "index (1).html" ]; then cp "index (1).html" www/index.html; else cp index.html www/index.html; fi
+          cp script.js www/
+          if [ -f "style (1).css" ]; then cp "style (1).css" www/style.css; cp "style (1).css" "www/style (1).css"; else cp style.css www/; fi
+      - run: npm install
+      - run: npx cap add android
+      - run: npx cap sync android
+      - run: chmod +x android/gradlew
+      - run: cd android && ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
         with:
-          name: Emex-Scientific-Calculator-APK
-          path: android/app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
-          retention-days: 7
+          name: emex-calculator-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
