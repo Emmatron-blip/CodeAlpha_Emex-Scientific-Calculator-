@@ -1,5 +1,5 @@
 {
-  "name": "calculator",
+  "name": "emex-calculator",
   "version": "1.0.0",
   "dependencies": {
     "@capacitor/core": "^7.0.0",
