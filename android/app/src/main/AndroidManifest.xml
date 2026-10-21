@@ -1,44 +1,22 @@
-name: Build Calculator Android APK
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
+    <application
+        android:allowBackup="false"
+        android:label="Emex Scientific Calculator"
+        android:theme="@android:style/Theme.Material.Light.NoActionBar">
 
-permissions:
-  contents: read
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
 
-jobs:
-  build:
-    name: Build Android APK
-    runs-on: ubuntu-latest
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+        </activity>
 
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
+    </application>
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Build debug APK
-        run: |
-          gradle --version
-          gradle -p android assembleDebug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Emex-Scientific-Calculator-APK
-          path: android/app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
-          retention-days: 7
+</manifest>
