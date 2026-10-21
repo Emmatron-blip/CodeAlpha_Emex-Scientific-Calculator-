@@ -23,6 +23,11 @@ jobs:
           if [ -f "style (1).css" ]; then cp "style (1).css" www/style.css; cp "style (1).css" "www/style (1).css"; else cp style.css www/; fi
       - run: npm install
       - run: npx cap add android
+      - name: Generate app icons
+        run: |
+          mkdir -p assets
+          cp icon-only.png assets/icon-only.png
+          npx @capacitor/assets generate --android --iconBackgroundColor '#ffffff' --iconBackgroundColorDark '#000000'
       - run: npx cap sync android
       - run: chmod +x android/gradlew
       - run: cd android && ./gradlew assembleDebug
