@@ -26,7 +26,10 @@ jobs:
       - name: Generate app icons
         run: |
           mkdir -p assets
-          cp icon-only.png assets/icon-only.png
+          ICON=$(ls icon-only*.png 2>/dev/null | head -n 1)
+          if [ -z "$ICON" ]; then echo "ERROR: icon file not found in repo"; ls; exit 1; fi
+          echo "Using icon: $ICON"
+          cp "$ICON" assets/icon-only.png
           npx @capacitor/assets generate --android --iconBackgroundColor '#ffffff' --iconBackgroundColorDark '#000000'
       - run: npx cap sync android
       - run: chmod +x android/gradlew
