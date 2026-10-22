@@ -36,13 +36,13 @@
     return n || 1;
   }
 
-  function styleGrid(g) {
+  function styleGrid(g, rows) {
     var cs = getComputedStyle(g);
     if (cs.display.indexOf('grid') > -1) {
       g.style.gridTemplateRows = 'none';
       g.style.gridAutoRows = '1fr';
     }
-    g.style.minHeight = '0';
+    g.style.minHeight = (rows * 34) + 'px';
     g.style.flex = '1 1 0';
     Array.prototype.forEach.call(g.children, function (b) {
       b.style.height = 'auto';
@@ -53,7 +53,6 @@
   function colFlex(el, grow) {
     el.style.display = 'flex';
     el.style.flexDirection = 'column';
-    el.style.minHeight = '0';
     el.style.flex = grow + ' 1 0';
   }
 
@@ -89,12 +88,12 @@
           s.height = '100%'; s.borderRadius = '0'; s.border = '0';
           s.padding = TOP + ' 10px 10px';
         } else {
-          s.flex = (i === path.length - 1 ? '1' : String(total)) + ' 1 0';
+          s.flex = String(total) + ' 1 0';
           s.height = 'auto';
         }
         if (i < path.length - 1) {
           Array.prototype.forEach.call(el.children, function (c) {
-            if (c !== path[i + 1] && !c.querySelector('button') && c.offsetHeight >= 60) c.style.flex = '2 1 auto';
+            if (c !== path[i + 1] && !c.querySelector('button') && c.offsetHeight >= 60) c.style.flex = '1 1 auto';
           });
         }
       });
@@ -104,15 +103,15 @@
         if (gs.length) {
           var rows = 0;
           gs.forEach(function (g) { rows += rowMap.get(g); });
-          if (c === gs[0] && gs.length === 1) { styleGrid(c); c.style.flex = rows + ' 1 0'; return; }
+          if (c === gs[0] && gs.length === 1) { styleGrid(c, rows); c.style.flex = rows + ' 1 0'; return; }
           colFlex(c, rows);
           gs.forEach(function (g) {
             var p = g.parentElement;
             while (p && p !== c) { colFlex(p, 1); p = p.parentElement; }
-            styleGrid(g);
+            styleGrid(g, rowMap.get(g));
           });
         } else if (!c.querySelector('button') && c.offsetHeight >= 60) {
-          c.style.flex = '2 1 auto';
+          c.style.flex = '1 1 auto';
         }
       });
     } catch (err) { /* never break the calculator */ }
