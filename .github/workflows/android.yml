@@ -21,6 +21,13 @@ jobs:
           if [ -f "index (1).html" ]; then cp "index (1).html" www/index.html; else cp index.html www/index.html; fi
           cp script.js www/
           if [ -f "style (1).css" ]; then cp "style (1).css" www/style.css; cp "style (1).css" "www/style (1).css"; else cp style.css www/; fi
+          for f in emex-hub.js emex-pro.js emex-fit.js; do
+            if [ -f "$f" ]; then
+              cp "$f" www/
+              sed -i "s#</body>#<script src=\"$f\"></script></body>#" www/index.html
+              grep -q "$f" www/index.html || echo "<script src=\"$f\"></script>" >> www/index.html
+            fi
+          done
       - run: npm install
       - run: npx cap add android
       - name: Generate app icons
