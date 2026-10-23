@@ -6,6 +6,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      PW: ${{ secrets.KEYSTORE_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -21,7 +23,7 @@ jobs:
           if [ -f "index (1).html" ]; then cp "index (1).html" www/index.html; else cp index.html www/index.html; fi
           cp script.js www/
           if [ -f "style (1).css" ]; then cp "style (1).css" www/style.css; cp "style (1).css" "www/style (1).css"; else cp style.css www/; fi
-          for f in emex-hub.js emex-pro.js emex-fit.js emex-boost.js; do
+          for f in emex-hub.js emex-pro.js emex-boost.js emex-pack-*.js emex-fit.js; do
             if [ -f "$f" ]; then
               cp "$f" www/
               sed -i "s#</body>#<script src=\"$f\"></script></body>#" www/index.html
@@ -39,8 +41,26 @@ jobs:
           npx @capacitor/assets generate --android
       - run: npx cap sync android
       - run: chmod +x android/gradlew
-      - run: cd android && ./gradlew assembleDebug
+      - name: Decide signing
+        id: sign
+        run: |
+          if [ -n "$PW" ] && [ -f release.jks.enc ]; then echo "on=true" >> "$GITHUB_OUTPUT"; else echo "on=false" >> "$GITHUB_OUTPUT"; fi
+      - name: Build signed release APK
+        if: steps.sign.outputs.on == 'true'
+        run: |
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in release.jks.enc -out release.jks -pass env:PW
+          (cd android && ./gradlew assembleRelease)
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          "$BT/zipalign" -p 4 android/app/build/outputs/apk/release/app-release-unsigned.apk aligned.apk
+          "$BT/apksigner" sign --ks release.jks --ks-pass env:PW --key-pass env:PW --out emex-calculator.apk aligned.apk
+          "$BT/apksigner" verify emex-calculator.apk
+          rm -f release.jks
+      - name: Build debug APK (no signing key yet)
+        if: steps.sign.outputs.on != 'true'
+        run: |
+          (cd android && ./gradlew assembleDebug)
+          cp android/app/build/outputs/apk/debug/app-debug.apk emex-calculator.apk
       - uses: actions/upload-artifact@v4
         with:
           name: emex-calculator-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: emex-calculator.apk
