@@ -98,7 +98,7 @@
     let name, tpl;
     if (pro) { const e = P[B.querySelector('#pf').value]; name = e[1]; tpl = e[5] || FX[name]; }
     else { name = B.querySelector('#fs').selectedOptions[0].textContent; tpl = FX[name]; }
-    const sym = ins.map(i => { const l = i.previousElementSibling; return l ? l.textContent.replace(/\s*\(.*$/, '').trim() : 'x'; });
+    const sym = ins.map(i => { const l = i.previousElementSibling; const t = l ? l.textContent.replace(/\s*\(.*$/, '').trim() : 'x'; return t.length > 24 ? 'Input' : t; });
     const val = ins.map(i => i.value.trim());
     const given = ins.map((i, k) => val[k] !== '' ? sym[k] + ' = ' + val[k] : null).filter(Boolean).join(', ');
     const out = [name, '', 'Given: ' + given];
