@@ -3,6 +3,9 @@
   'use strict';
   const b = document.getElementById('ehb'), eh = document.getElementById('eh'), T = document.getElementById('eht');
   if (!b || !eh || !T) return;
+  const css = document.createElement('style');
+  css.textContent = '.eh-top{padding-top:calc(max(env(safe-area-inset-top,0px),38px) + 6px)!important}.eh-top button{min-width:44px;min-height:40px}';
+  document.head.appendChild(css);
   b.textContent = '🏠';
   b.setAttribute('aria-label', 'Home');
   const home = () => [...T.children].find(x => x.textContent === 'Home');
