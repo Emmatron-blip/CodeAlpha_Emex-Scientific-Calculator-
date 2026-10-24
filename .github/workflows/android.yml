@@ -6,6 +6,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       PW: ${{ secrets.KEYSTORE_PASSWORD }}
     steps:
@@ -17,6 +19,9 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
+      - name: Stamp build number
+        run: |
+          echo "window.EMEX_BUILD=${{ github.run_number }};window.EMEX_REPO='${{ github.repository }}';" > emex-build.js
       - name: Prepare web files
         run: |
           mkdir -p www
@@ -24,7 +29,7 @@ jobs:
           cp script.js www/
           if [ -f "style (1).css" ]; then cp "style (1).css" www/style.css; cp "style (1).css" "www/style (1).css"; else cp style.css www/; fi
           sed -i 's|<head\([^>]*\)>|<head\1><style id="emex-boot">html{background:#0a0f1c}body{visibility:hidden}#eh,#eh *{visibility:visible}</style><script>setTimeout(function(){var s=document.getElementById("emex-boot");if(s)s.remove()},4000)</script>|I' www/index.html
-          for f in emex-hub.js emex-pro.js emex-boost.js emex-share.js emex-pack-*.js emex-home.js emex-mascot.js emex-ref.js emex-launch.js emex-fit.js; do
+          for f in emex-build.js emex-hub.js emex-pro.js emex-boost.js emex-share.js emex-pack-*.js emex-home.js emex-mascot.js emex-update.js emex-ref.js emex-launch.js emex-fit.js; do
             if [ -f "$f" ]; then
               cp "$f" www/
               sed -i "s#</body>#<script src=\"$f\"></script></body>#" www/index.html
@@ -33,6 +38,10 @@ jobs:
           done
       - run: npm install
       - run: npx cap add android
+      - name: Set app version
+        run: |
+          sed -i "s/versionCode [0-9]*/versionCode ${{ github.run_number }}/; s/versionName \"[^\"]*\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
+          grep -nE "versionCode|versionName" android/app/build.gradle
       - name: Generate app icons
         run: |
           mkdir -p assets
@@ -61,6 +70,11 @@ jobs:
         run: |
           (cd android && ./gradlew assembleDebug)
           cp android/app/build/outputs/apk/debug/app-debug.apk emex-calculator.apk
+      - name: Publish release (signed builds only)
+        if: steps.sign.outputs.on == 'true' && (github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[release]'))
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "b${{ github.run_number }}" emex-calculator.apk --target "${{ github.sha }}" --title "Build ${{ github.run_number }}" --notes "Emex update" --latest
       - uses: actions/upload-artifact@v4
         with:
           name: emex-calculator-apk
