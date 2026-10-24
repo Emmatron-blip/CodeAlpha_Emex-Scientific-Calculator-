@@ -21,6 +21,7 @@
   try { history.replaceState({ emex: 0 }, ''); } catch (e) {}
   guard();
   b.click();
+  const boot = document.getElementById('emex-boot'); if (boot) boot.remove();
   document.addEventListener('click', () => { if (!armed) guard(); }, true);
   window.addEventListener('popstate', () => {
     armed = false;
