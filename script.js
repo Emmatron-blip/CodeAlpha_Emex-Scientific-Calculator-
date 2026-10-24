@@ -1188,3 +1188,44 @@ document.addEventListener("keydown", event => {
 
 renderHistory();
 updateDisplay();
+const VERSION_URL =
+  "https://raw.githubusercontent.com/Emmatron-blip/CodeAlpha_Emex-Scientific-Calculator-/main/version.json";
+
+async function checkForUpdate() {
+  try {
+    const { App, Browser } = window.Capacitor?.Plugins || {};
+    if (!App) return; // running in a normal browser, skip
+
+    const installed = await App.getInfo(); // { version, build }
+    const installedCode = parseInt(installed.build, 10);
+
+    const res = await fetch(`${VERSION_URL}?t=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) return;
+    const info = await res.json();
+
+    if (info.versionCode > installedCode) {
+      showUpdateBanner(info, Browser);
+    }
+  } catch (e) {
+    // offline or failed: ignore silently
+  }
+}
+
+function showUpdateBanner(info, Browser) {
+  const banner = document.createElement("div");
+  banner.style.cssText =
+    "position:fixed;left:0;right:0;bottom:0;padding:14px;background:#1a73e8;color:#fff;text-align:center;z-index:9999;font-family:sans-serif";
+  banner.innerHTML = `
+    <strong>Update available (v${info.versionName})</strong><br>
+    <small>${info.releaseNotes}</small><br>
+    <button id="updateBtn" style="margin-top:8px;padding:8px 16px">Update</button>
+    ${info.forceUpdate ? "" : '<button id="laterBtn" style="margin:8px 0 0 8px;padding:8px 16px">Later</button>'}
+  `;
+  document.body.appendChild(banner);
+
+  document.getElementById("updateBtn").onclick = () => Browser.open({ url: info.apkUrl });
+  const later = document.getElementById("laterBtn");
+  if (later) later.onclick = () => banner.remove();
+}
+
+window.addEventListener("load", checkForUpdate);
