@@ -23,6 +23,7 @@ jobs:
           if [ -f "index (1).html" ]; then cp "index (1).html" www/index.html; else cp index.html www/index.html; fi
           cp script.js www/
           if [ -f "style (1).css" ]; then cp "style (1).css" www/style.css; cp "style (1).css" "www/style (1).css"; else cp style.css www/; fi
+          sed -i 's|<head\([^>]*\)>|<head\1><style id="emex-boot">html{background:#0a0f1c}body{visibility:hidden}#eh,#eh *{visibility:visible}</style><script>setTimeout(function(){var s=document.getElementById("emex-boot");if(s)s.remove()},4000)</script>|I' www/index.html
           for f in emex-hub.js emex-pro.js emex-boost.js emex-share.js emex-pack-*.js emex-home.js emex-ref.js emex-launch.js emex-fit.js; do
             if [ -f "$f" ]; then
               cp "$f" www/
