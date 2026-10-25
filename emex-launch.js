@@ -4,21 +4,21 @@
   const b = document.getElementById('ehb'), eh = document.getElementById('eh'), T = document.getElementById('eht');
   if (!b || !eh || !T) return;
   const css = document.createElement('style');
-  css.textContent = '.eh-top{padding-top:calc(max(env(safe-area-inset-top,0px),38px) + 6px)!important}.eh-top button{min-width:44px;min-height:40px}#eht{display:none!important}';
+  css.textContent = '.eh-top{padding-top:calc(max(env(safe-area-inset-top,0px),38px) + 6px)!important}.eh-top button{min-width:44px;min-height:40px}#eht,#ehx{display:none!important}';
   document.head.appendChild(css);
   b.textContent = '🏠';
   b.setAttribute('aria-label', 'Home');
   const home = () => [...T.children].find(x => x.textContent === 'Home');
   const onHome = () => { const a = T.querySelector('button.on'); return eh.classList.contains('on') && !!a && a === home(); };
   const TITLES = { Home: '⚡ Emex Tools', Pro: 'Formula Library', Formulas: 'Basic Formulas', Convert: 'Converters', Graph: 'Graph', Games: 'Games', AI: 'AI Solver', History: 'History', Theme: 'Theme', Reference: 'Reference' };
-  const top = eh.querySelector('.eh-top'), title = top && top.querySelector('span'), xb = document.getElementById('ehx');
+  const top = eh.querySelector('.eh-top'), title = top && top.querySelector('span');
   if (top && title) {
     const back = document.createElement('button');
     back.textContent = '←'; back.setAttribute('aria-label', 'Back to Home'); back.style.display = 'none';
     title.style.flex = '1'; title.style.marginLeft = '10px';
     top.insertBefore(back, title);
     back.onclick = () => { const h = home(); if (h) h.click(); };
-    const sync = () => { const a = T.querySelector('button.on'), n = a ? a.textContent : 'Home', isHome = n === 'Home'; title.textContent = TITLES[n] || n; back.style.display = isHome ? 'none' : ''; if (xb) xb.style.display = isHome ? '' : 'none'; };
+    const sync = () => { const a = T.querySelector('button.on'), n = a ? a.textContent : 'Home', isHome = n === 'Home'; title.textContent = TITLES[n] || n; back.style.display = isHome ? 'none' : ''; };
     new MutationObserver(sync).observe(T, { attributes: true, subtree: true, attributeFilter: ['class'] });
     sync();
   }
